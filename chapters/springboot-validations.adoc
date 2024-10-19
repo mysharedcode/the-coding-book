@@ -1,0 +1,278 @@
+== Validations in Spring Boot
+
+In Spring Boot, validations are a key feature for ensuring that the data in your application conforms to certain rules before it is processed or saved. Spring Boot uses Java Bean Validation (JSR-303/JSR-380) as its default validation framework, which is powered by Hibernate Validator.
+
+=== 1. Basic Bean Validation Annotations
+You can add annotations to the fields in your model or entity classes to enforce validation constraints. Common annotations include:
+
+- `@NotNull`: Ensures that a field is not `null`.
+- `@NotEmpty`: Ensures that a collection or string is not `null` or empty.
+- `@NotBlank`: Ensures that a string is not `null` and trimmed length is greater than zero.
+- `@Size(min=, max=)`: Validates the size of a collection, array, or string.
+- `@Min(value=)`: Validates that a number is greater than or equal to the specified minimum.
+- `@Max(value=)`: Validates that a number is less than or equal to the specified maximum.
+- `@Email`: Validates that the value is a valid email address.
+- `@Pattern(regexp=)`: Validates that a string matches the given regular expression.
+- `@AssertFalse` Ensures that the annotated field or property is `false`. It is typically used to validate Boolean fields.
+- `@AssertTrue` ensures that the annotated field or property is `true`. This is used for validating conditions that must evaluate to true.
+- `@Future` ensures that the annotated date or time value is in the future. It is typically used to validate fields representing dates or times.
+- `@DecimalMin` ensures that the annotated field is a number with a value greater than or equal to the specified minimum. It can be applied to fields of type `String`, `BigDecimal`, `BigInteger`, and primitive number types.
+
+Example:
+
+[source,java,options=nowrap]
+----
+package de.tramotech;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import javax.validation.constraints.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Data
+@AllArgsConstructor
+public class User {
+
+    @NotNull(message = "Username cannot be null")
+    @NotBlank(message = "Username cannot be blank")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    private String username;
+
+    @NotNull(message = "Password cannot be null")
+    @NotEmpty(message = "Password cannot be empty")
+    @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
+    private String password;
+
+    @Min(value = 18, message = "Age must be at least 18")
+    @Max(value = 100, message = "Age must be less than or equal to 100")
+    private int age;
+
+    @Email(message = "Email should be valid")
+    @NotNull(message = "Email cannot be null")
+    private String email;
+
+    @Pattern(regexp = "\\+?[0-9]{10,15}", message = "Phone number must be a valid format")
+    private String phoneNumber;
+
+    @AssertFalse(message = "IsAdmin must be false")
+    private boolean isAdmin;
+
+    @AssertTrue(message = "Active must be true")
+    private boolean isActive;
+
+    @Future(message = "Registration date must be in the future")
+    private LocalDate registrationDate;
+
+    @DecimalMin(value = "0.0", inclusive = false, message = "Salary must be greater than zero")
+    private BigDecimal salary;
+}
+----
+
+=== 2. Validating Request Bodies in Controllers
+When accepting data from the client (like a POST or PUT request), you can use the `@Valid` or `@Validated` annotation to trigger validation on the incoming data.
+
+Here’s an example using `@Valid` in a controller:
+
+[source,java,options=nowrap]
+----
+import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @PostMapping
+    public String createUser(@Valid @RequestBody User user) {
+        // If validation fails, a MethodArgumentNotValidException will be thrown
+        return "User created";
+    }
+}
+----
+
+In this case, Spring will automatically validate the `User` object based on the constraints defined in the class. If any constraint is violated, Spring Boot will return a `400 Bad Request` response by default, along with error messages.
+
+=== 3. Programmatic Validation Using Java's Validator
+One can also perform the validation programmatically like this:
+
+[source,java,options=nowrap]
+----
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ValidationUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ValidationUtils.class);
+
+    private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    private static final Validator validator = factory.getValidator();
+
+    public static <T> void validate(T object) {
+        Set<ConstraintViolation<T>> violations = validator.validate(object);
+
+        if (!violations.isEmpty()) {
+            StringBuilder violationMessages = new StringBuilder();
+            for (ConstraintViolation<T> violation : violations) {
+                violationMessages.append(violation.getPropertyPath())
+                    .append(" ")
+                    .append(violation.getMessage())
+                    .append("\n");
+            }
+            logger.error("Validation failed:\n{}", violationMessages.toString());
+            throw new IllegalArgumentException("Validation failed");
+        } else {
+            logger.info("Validation passed.");
+        }
+    }
+}
+----
+
+In the `pom.xml` file, you need to define the dependency for the javax.validation API and include a dependency for its implementation, such as Hibernate Validator. ou also need to provide an implementation for the EL (Expression Language), such as GlassFish's EL implementation.
+
+[source,xml,options=nowrap]
+----
+ <dependencies>
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>2.0.1.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>6.0.13.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.el</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.34</version>
+    </dependency>
+----
+
+=== 4. Custom Error Responses
+You can customize how validation errors are handled by defining an exception handler for `MethodArgumentNotValidException` in your `@ControllerAdvice` class:
+
+[source,java,options=nowrap]
+----
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.ResponseEntity;
+import java.util.HashMap;
+import java.util.Map;
+
+@ControllerAdvice
+public class ValidationExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(), error.getDefaultMessage()));
+        
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+}
+----
+
+=== 5. Custom Validators
+You can create your own custom validation annotations if the built-in ones do not cover your use case. For example, you can create a `@ValidAge` annotation to validate an age field.
+
+Here’s a simple example:
+
+1. Create the annotation:
+
+[source,java,options=nowrap]
+----
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = AgeValidator.class)
+public @interface ValidAge {
+    String message() default "Invalid age";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+----
+2. Implement the validator:
+
+[source,java,options=nowrap]
+----
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
+public class AgeValidator implements ConstraintValidator<ValidAge, Integer> {
+
+    @Override
+    public boolean isValid(Integer age, ConstraintValidatorContext context) {
+        return age != null && age >= 18 && age <= 100;
+    }
+}
+----
+
+3. Use the custom validator in your model:
+
+[source,java,options=nowrap]
+----
+public class User {
+    @ValidAge
+    private Integer age;
+
+    // other fields and methods
+}
+----
+
+=== 5. Groups and Conditional Validation
+In more advanced scenarios, you can define validation groups to apply different validation rules in different contexts using the `groups` attribute of constraint annotations.
+
+For example:
+
+[source,java,options=nowrap]
+----
+public interface CreateGroup {}
+public interface UpdateGroup {}
+
+public class User {
+
+    @NotNull(groups = CreateGroup.class)
+    private String name;
+
+    @NotNull(groups = UpdateGroup.class)
+    private String email;
+}
+----
+
+You can then trigger the validation for specific groups in your controller by using the `@Validated` annotation:
+
+[source,java,options=nowrap]
+----
+@PostMapping
+public String createUser(@Validated(CreateGroup.class) @RequestBody User user) {
+    return "User created";
+}
+----
+
+
+== Conclusion
+Spring Boot validations offer a comprehensive way to validate user input through annotations, ensuring that your application's data is consistent and safe to use. The framework provides both out-of-the-box validations and the flexibility to create custom rules when needed.
