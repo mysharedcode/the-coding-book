@@ -5,3 +5,5 @@ By Ahmed Fikri
 
 include::chapters/springboot-validations.adoc[]
 
+include::chapters/Dynamically-Generating-JSON-Payloads-for-REST-API-Testing.adoc[]
+

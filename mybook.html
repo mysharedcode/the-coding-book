@@ -524,9 +524,15 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_4_custom_error_responses">4. Custom Error Responses</a></li>
 <li><a href="#_5_custom_validators">5. Custom Validators</a></li>
 <li><a href="#_5_groups_and_conditional_validation">5. Groups and Conditional Validation</a></li>
+<li><a href="#_conclusion">Conclusion</a></li>
 </ul>
 </li>
-<li><a href="#_conclusion">Conclusion</a></li>
+<li><a href="#_dynamically_generating_json_payloads_for_rest_api_testing">Dynamically Generating JSON Payloads for REST API Testing</a>
+<ul class="sectlevel2">
+<li><a href="#_1_dynamic_object_creation_with_dummy_data_using_reflection">1. Dynamic Object Creation with Dummy Data Using Reflection</a></li>
+<li><a href="#_2_generate_the_json_output_from_the_object">2. Generate the JSON output from the object</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -876,20 +882,189 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_conclusion">Conclusion</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_conclusion">Conclusion</h3>
 <div class="paragraph">
 <p>Spring Boot validations offer a comprehensive way to validate user input through annotations, ensuring that your application&#8217;s data is consistent and safe to use. The framework provides both out-of-the-box validations and the flexibility to create custom rules when needed.</p>
 </div>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_dynamically_generating_json_payloads_for_rest_api_testing">Dynamically Generating JSON Payloads for REST API Testing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When developing a REST API, I often need to test endpoints that accept objects in JSON format. To do this, I need to create instances of the objects involved in the request payload, ensuring that all fields are populated with dummy data. I wrote a method that dynamically generates instances for any given class, eliminating the need to manually create them—a process that can be cumbersome, especially for complex objects.</p>
+</div>
+<div class="paragraph">
+<p>Furthermore, I created a method that converts any class instance into a human-readable JSON format, allowing me to adjust the values if needed afterward.</p>
+</div>
+<div class="sect2">
+<h3 id="_1_dynamic_object_creation_with_dummy_data_using_reflection">1. Dynamic Object Creation with Dummy Data Using Reflection</h3>
+<div class="paragraph">
+<p>The method for dynamically creating an object populated with dummy data is based on reflection. Here&#8217;s the method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">package</span><span class="tok-w"> </span><span class="tok-nn">de.tramotech</span><span class="tok-p">;</span>
+
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.lang.reflect.*</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.math.BigDecimal</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.time.LocalDate</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.Random</span><span class="tok-p">;</span>
+
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">DynamicInstanceProvider</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-o">&lt;</span><span class="tok-n">T</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">T</span><span class="tok-w"> </span><span class="tok-nf">getInstanceWithFields</span><span class="tok-p">(</span><span class="tok-n">Class</span><span class="tok-o">&lt;</span><span class="tok-n">T</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">clazz</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-k">try</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-c1">// Create a new instance of the class</span>
+<span class="tok-w">            </span><span class="tok-n">T</span><span class="tok-w"> </span><span class="tok-n">instance</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">clazz</span><span class="tok-p">.</span><span class="tok-na">getDeclaredConstructor</span><span class="tok-p">().</span><span class="tok-na">newInstance</span><span class="tok-p">();</span>
+
+<span class="tok-w">            </span><span class="tok-c1">// Get all fields of the class, including private ones</span>
+<span class="tok-w">            </span><span class="tok-n">Field</span><span class="tok-o">[]</span><span class="tok-w"> </span><span class="tok-n">fields</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">clazz</span><span class="tok-p">.</span><span class="tok-na">getDeclaredFields</span><span class="tok-p">();</span>
+
+<span class="tok-w">            </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">Field</span><span class="tok-w"> </span><span class="tok-n">field</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-n">fields</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">                </span><span class="tok-c1">// Make the field accessible if it&#39;s private</span>
+<span class="tok-w">                </span><span class="tok-n">field</span><span class="tok-p">.</span><span class="tok-na">setAccessible</span><span class="tok-p">(</span><span class="tok-kc">true</span><span class="tok-p">);</span>
+
+<span class="tok-w">                </span><span class="tok-c1">// Set a value for each field based on its type</span>
+<span class="tok-w">                </span><span class="tok-n">field</span><span class="tok-p">.</span><span class="tok-na">set</span><span class="tok-p">(</span><span class="tok-n">instance</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">getDefaultValueForField</span><span class="tok-p">(</span><span class="tok-n">field</span><span class="tok-p">));</span>
+<span class="tok-w">            </span><span class="tok-p">}</span>
+
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">instance</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">catch</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">Exception</span><span class="tok-w"> </span><span class="tok-n">e</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">throw</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">RuntimeException</span><span class="tok-p">(</span><span class="tok-s">&quot;Could not create and populate an instance of &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">clazz</span><span class="tok-p">.</span><span class="tok-na">getName</span><span class="tok-p">(),</span><span class="tok-w"> </span><span class="tok-n">e</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+
+<span class="tok-w">    </span><span class="tok-c1">// Method to provide a default value based on field type</span>
+<span class="tok-w">    </span><span class="tok-kd">private</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-n">Object</span><span class="tok-w"> </span><span class="tok-nf">getDefaultValueForField</span><span class="tok-p">(</span><span class="tok-n">Field</span><span class="tok-w"> </span><span class="tok-n">field</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-n">Class</span><span class="tok-o">&lt;?&gt;</span><span class="tok-w"> </span><span class="tok-n">fieldType</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">field</span><span class="tok-p">.</span><span class="tok-na">getType</span><span class="tok-p">();</span>
+<span class="tok-w">        </span><span class="tok-n">Random</span><span class="tok-w"> </span><span class="tok-n">random</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">Random</span><span class="tok-p">();</span>
+
+<span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">equals</span><span class="tok-p">(</span><span class="tok-kt">int</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextInt</span><span class="tok-p">(</span><span class="tok-mi">1000</span><span class="tok-p">);</span><span class="tok-w"> </span><span class="tok-c1">// Random integer value</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">equals</span><span class="tok-p">(</span><span class="tok-kt">double</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextDouble</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-o">*</span><span class="tok-w"> </span><span class="tok-mi">100</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Random double value</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">equals</span><span class="tok-p">(</span><span class="tok-kt">boolean</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextBoolean</span><span class="tok-p">();</span><span class="tok-w"> </span><span class="tok-c1">// Random boolean value</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">equals</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-s">&quot;RandomString_&quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextInt</span><span class="tok-p">(</span><span class="tok-mi">1000</span><span class="tok-p">);</span><span class="tok-w"> </span><span class="tok-c1">// Random string</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">equals</span><span class="tok-p">(</span><span class="tok-n">BigDecimal</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">BigDecimal</span><span class="tok-p">.</span><span class="tok-na">valueOf</span><span class="tok-p">(</span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextDouble</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-o">*</span><span class="tok-w"> </span><span class="tok-mi">1000</span><span class="tok-p">).</span><span class="tok-na">setScale</span><span class="tok-p">(</span><span class="tok-mi">2</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">BigDecimal</span><span class="tok-p">.</span><span class="tok-na">ROUND_HALF_UP</span><span class="tok-p">);</span><span class="tok-w"> </span><span class="tok-c1">// Random BigDecimal</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">equals</span><span class="tok-p">(</span><span class="tok-n">LocalDate</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">LocalDate</span><span class="tok-p">.</span><span class="tok-na">now</span><span class="tok-p">().</span><span class="tok-na">minusDays</span><span class="tok-p">(</span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextInt</span><span class="tok-p">(</span><span class="tok-mi">365</span><span class="tok-w"> </span><span class="tok-o">*</span><span class="tok-w"> </span><span class="tok-mi">5</span><span class="tok-p">));</span><span class="tok-w"> </span><span class="tok-c1">// Random LocalDate within the last 5 years</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">isEnum</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-n">Object</span><span class="tok-o">[]</span><span class="tok-w"> </span><span class="tok-n">enumConstants</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">fieldType</span><span class="tok-p">.</span><span class="tok-na">getEnumConstants</span><span class="tok-p">();</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">enumConstants</span><span class="tok-o">[</span><span class="tok-n">random</span><span class="tok-p">.</span><span class="tok-na">nextInt</span><span class="tok-p">(</span><span class="tok-n">enumConstants</span><span class="tok-p">.</span><span class="tok-na">length</span><span class="tok-p">)</span><span class="tok-o">]</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Random enum value</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">        </span><span class="tok-c1">// For complex objects, create a new instance recursively</span>
+<span class="tok-w">        </span><span class="tok-k">try</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">getInstanceWithFields</span><span class="tok-p">(</span><span class="tok-n">fieldType</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">catch</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">Exception</span><span class="tok-w"> </span><span class="tok-n">e</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-kc">null</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Set null if unable to instantiate</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-kt">void</span><span class="tok-w"> </span><span class="tok-nf">main</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-o">[]</span><span class="tok-w"> </span><span class="tok-n">args</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-c1">// Example: Create and populate an instance of User</span>
+<span class="tok-w">        </span><span class="tok-n">User</span><span class="tok-w"> </span><span class="tok-n">userInstance</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">getInstanceWithFields</span><span class="tok-p">(</span><span class="tok-n">User</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-n">userInstance</span><span class="tok-p">);</span>
+
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_generate_the_json_output_from_the_object">2. Generate the JSON output from the object</h3>
+<div class="paragraph">
+<p>We use Jackson to convert a class instance into a JSON string. Jackson automatically handles most field types, including nested objects, enums, and even <code>BigDecimal</code> and <code>LocalDate</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">package</span><span class="tok-w"> </span><span class="tok-nn">de.tramotech</span><span class="tok-p">;</span>
+
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">com.fasterxml.jackson.core.JsonProcessingException</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">com.fasterxml.jackson.databind.ObjectMapper</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">com.fasterxml.jackson.databind.SerializationFeature</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">com.fasterxml.jackson.datatype.jsr310.JavaTimeModule</span><span class="tok-p">;</span>
+
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">JsonUtils</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-c1">// Method to convert any object to JSON string</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-nf">jsonify</span><span class="tok-p">(</span><span class="tok-n">Object</span><span class="tok-w"> </span><span class="tok-n">obj</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-n">ObjectMapper</span><span class="tok-w"> </span><span class="tok-n">objectMapper</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">ObjectMapper</span><span class="tok-p">();</span>
+<span class="tok-w">        </span><span class="tok-n">objectMapper</span><span class="tok-p">.</span><span class="tok-na">registerModule</span><span class="tok-p">(</span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">JavaTimeModule</span><span class="tok-p">());</span>
+<span class="tok-w">        </span><span class="tok-c1">// Enable pretty-printing for a nicely formatted JSON output</span>
+<span class="tok-w">        </span><span class="tok-n">objectMapper</span><span class="tok-p">.</span><span class="tok-na">enable</span><span class="tok-p">(</span><span class="tok-n">SerializationFeature</span><span class="tok-p">.</span><span class="tok-na">INDENT_OUTPUT</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-k">try</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-c1">// Convert object to JSON string</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">objectMapper</span><span class="tok-p">.</span><span class="tok-na">writeValueAsString</span><span class="tok-p">(</span><span class="tok-n">obj</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">catch</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">JsonProcessingException</span><span class="tok-w"> </span><span class="tok-n">e</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">throw</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">RuntimeException</span><span class="tok-p">(</span><span class="tok-s">&quot;Could not convert object to JSON&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">e</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-kt">void</span><span class="tok-w"> </span><span class="tok-nf">main</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-o">[]</span><span class="tok-w"> </span><span class="tok-n">args</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-c1">// Example: Create and populate an instance of User</span>
+<span class="tok-w">        </span><span class="tok-n">User</span><span class="tok-w"> </span><span class="tok-n">userInstance</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">DynamicInstanceProvider</span><span class="tok-p">.</span><span class="tok-na">getInstanceWithFields</span><span class="tok-p">(</span><span class="tok-n">User</span><span class="tok-p">.</span><span class="tok-na">class</span><span class="tok-p">);</span>
+
+<span class="tok-w">        </span><span class="tok-c1">// Convert to JSON</span>
+<span class="tok-w">        </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">json</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">jsonify</span><span class="tok-p">(</span><span class="tok-n">userInstance</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-n">json</span><span class="tok-p">);</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Example of Generated JSON Output:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="json"><span></span><span class="tok-p">{</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;username&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s2">&quot;RandomString_459&quot;</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;password&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s2">&quot;RandomString_175&quot;</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;age&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-mi">485</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;email&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s2">&quot;RandomString_932&quot;</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;phoneNumber&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s2">&quot;RandomString_609&quot;</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;registrationDate&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-p">[</span><span class="tok-w"> </span><span class="tok-mi">2024</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-p">],</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;salary&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-mf">392.33</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;adress&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-nt">&quot;street&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s2">&quot;RandomString_114&quot;</span><span class="tok-p">,</span>
+<span class="tok-w">    </span><span class="tok-nt">&quot;city&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-s2">&quot;RandomString_205&quot;</span>
+<span class="tok-w">  </span><span class="tok-p">},</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;active&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-kc">false</span><span class="tok-p">,</span>
+<span class="tok-w">  </span><span class="tok-nt">&quot;admin&quot;</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-kc">false</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Add the Jackson dependency to your project if you&#8217;re using Maven:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>com.fasterxml.jackson.core<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>jackson-databind<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>2.14.0<span class="tok-nt">&lt;/version&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-cm">&lt;!-- to support Java 8 date/time types --&gt;</span>
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>com.fasterxml.jackson.datatype<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>jackson-datatype-jsr310<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>2.14.0<span class="tok-nt">&lt;/version&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Use the same version as your Jackson core version --&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-19 08:06:11 +0200
+Last updated 2024-10-20 07:22:49 +0200
 </div>
 </div>
 </body>

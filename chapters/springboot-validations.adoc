@@ -274,5 +274,5 @@ public String createUser(@Validated(CreateGroup.class) @RequestBody User user) {
 ----
 
 
-== Conclusion
+=== Conclusion
 Spring Boot validations offer a comprehensive way to validate user input through annotations, ensuring that your application's data is consistent and safe to use. The framework provides both out-of-the-box validations and the flexibility to create custom rules when needed.
