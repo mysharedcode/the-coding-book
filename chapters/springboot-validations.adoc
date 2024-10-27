@@ -70,7 +70,7 @@ public class User {
 }
 ----
 
-=== 2. Validating Request Bodies in Controllers
+=== Validating Request Bodies in Controllers
 When accepting data from the client (like a POST or PUT request), you can use the `@Valid` or `@Validated` annotation to trigger validation on the incoming data.
 
 Here’s an example using `@Valid` in a controller:
@@ -94,7 +94,7 @@ public class UserController {
 
 In this case, Spring will automatically validate the `User` object based on the constraints defined in the class. If any constraint is violated, Spring Boot will return a `400 Bad Request` response by default, along with error messages.
 
-=== 3. Programmatic Validation Using Java's Validator
+=== Programmatic Validation Using Java's Validator
 One can also perform the validation programmatically like this:
 
 [source,java,options=nowrap]
@@ -164,7 +164,7 @@ In the `pom.xml` file, you need to define the dependency for the javax.validatio
     </dependency>
 ----
 
-=== 4. Custom Error Responses
+=== Custom Error Responses
 You can customize how validation errors are handled by defining an exception handler for `MethodArgumentNotValidException` in your `@ControllerAdvice` class:
 
 [source,java,options=nowrap]
@@ -190,12 +190,12 @@ public class ValidationExceptionHandler {
 }
 ----
 
-=== 5. Custom Validators
+=== Custom Validators
 You can create your own custom validation annotations if the built-in ones do not cover your use case. For example, you can create a `@ValidAge` annotation to validate an age field.
 
 Here’s a simple example:
 
-1. Create the annotation:
+. Create the annotation:
 
 [source,java,options=nowrap]
 ----
@@ -215,7 +215,9 @@ public @interface ValidAge {
     Class<? extends Payload>[] payload() default {};
 }
 ----
-2. Implement the validator:
+
+[start=2]
+. Implement the validator:
 
 [source,java,options=nowrap]
 ----
@@ -231,7 +233,8 @@ public class AgeValidator implements ConstraintValidator<ValidAge, Integer> {
 }
 ----
 
-3. Use the custom validator in your model:
+[start=3]
+. Use the custom validator in your model:
 
 [source,java,options=nowrap]
 ----
@@ -243,7 +246,7 @@ public class User {
 }
 ----
 
-=== 5. Groups and Conditional Validation
+=== Groups and Conditional Validation
 In more advanced scenarios, you can define validation groups to apply different validation rules in different contexts using the `groups` attribute of constraint annotations.
 
 For example:

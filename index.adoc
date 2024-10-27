@@ -1,4 +1,5 @@
 :source-highlighter: pygments
+:sectnums:
 = Spring Boot
 By Ahmed Fikri
 :toc: left
@@ -6,4 +7,6 @@ By Ahmed Fikri
 include::chapters/springboot-validations.adoc[]
 
 include::chapters/Dynamically-Generating-JSON-Payloads-for-REST-API-Testing.adoc[]
+
+include::chapters/openapi.adoc[]
 

@@ -1,0 +1,158 @@
+== OpenAPI and Its Role in Automating REST API Client Creation
+
+OpenAPI is a standard specification for defining REST APIs in a structured, machine-readable format (usually YAML or JSON). It describes endpoints, request and response formats, data models, and authentication methods, providing a blueprint of an API's functionality.
+
+By using OpenAPI, developers can automatically generate client code for REST APIs in multiple languages, saving time and reducing errors. This approach ensures consistency with the API's specification, making it easier to integrate with APIs and keep client code in sync when APIs evolve.
+
+=== Generating OpenAPI Specification in Spring Boot
+
+==== Adding Dependencies
+
+First, ensure that you have added the necessary `springdoc-openapi` dependency in your `pom.xml` file.
+
+[source,xml,options=nowrap]
+----
+<dependency>
+  <groupId>org.springdoc</groupId>
+  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+  <version>2.2.0</version>
+</dependency>
+----
+
+==== Accessing the YAML Version of the OpenAPI Documentation
+
+By default, SpringDoc provides both JSON and YAML versions of your OpenAPI specification. You don’t need additional configuration to access the YAML version. The endpoints are as follows:
+
+- JSON format: visit the URL `/v3/api-docs` (e.g., `http://localhost:8080/v3/api-docs`).
+- YAML format: visit the URL `/v3/api-docs.yaml` (e.g., `http://localhost:8080/v3/api-docs.yaml`).
+
+==== Optional: Swagger UI
+
+If you are using Swagger UI for interactive API documentation, you can also toggle between viewing the OpenAPI specification in either JSON or YAML format.
+
+Swagger UI can be accessed at:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+=== Generating a Feign Client in Spring Boot using OpenAPI Generator
+
+To generate a Feign client from an OpenAPI YAML file in a Spring Boot project, use the OpenAPI Generator plugin.
+
+==== Add OpenAPI Generator Plugin to Maven
+Add the following plugin to your `pom.xml` file to enable code generation with OpenAPI Generator.
+
+[source, xml, options=nowrap]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.openapitools</groupId>
+      <artifactId>openapi-generator-maven-plugin</artifactId>
+      <version>7.9.0</version> <!-- Check for the latest version -->
+      <executions>
+        <execution>
+          <goals>
+            <goal>generate</goal>
+          </goals>
+          <configuration>
+            <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+            <generatorName>spring</generatorName>
+            <apiPackage>de.tramotech.openapi.api</apiPackage>
+            <modelPackage>de.tramotech.openapi.model</modelPackage>
+            <output>${project.basedir}/gen-src</output>
+            <configOptions>
+              <library>spring-cloud</library> <!-- Enables Feign client generation -->
+            </configOptions>
+          </configuration>
+       </execution>
+    </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+. Ensure that the `inputSpec` path points to your OpenAPI YAML file.
+
+[start=2]
+. Specify Output Directory
+Set the output directory where the generated code will be stored (e.g., `generated-sources` in this example).
+
+[start=3]
+. Configure Feign Client Library
+Set `configOptions.library` to `spring-cloud` to generate Feign-based API clients.
+
+[start=4]
+. Add Required Dependencies
+In your `pom.xml`, add the following dependencies to support Feign client generation and JSON processing.
+
+[source, xml, options=nowrap]
+----
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-annotations</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.github.openfeign</groupId>
+    <artifactId>feign-jackson</artifactId>
+    <version>12.3</version> <!-- Or latest stable version -->
+</dependency>
+
+<dependency>
+    <groupId>org.openapitools</groupId>
+    <artifactId>jackson-databind-nullable</artifactId>
+    <version>0.2.4</version> <!-- Or latest stable version -->
+</dependency>
+
+<dependency>
+    <groupId>io.github.openfeign</groupId>
+    <artifactId>feign-okhttp</artifactId>
+    <version>12.3</version> <!-- Or latest stable version -->
+</dependency>
+
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version> <!-- Or latest stable version -->
+</dependency>
+
+<dependency>
+    <groupId>javax.validation</groupId>
+    <artifactId>validation-api</artifactId>
+    <version>2.0.1.Final</version>
+</dependency>
+----
+
+[start=5]
+. Run the Plugin
+To generate the client, run the following Maven command in your project directory:
+
+[source, shell,options=nowrap]
+----
+mvn clean install
+----
+
+This command will generate the Feign client code based on the OpenAPI YAML file and place it in the specified output directory.
+[start=6]
+. Add Generated Code to the Project
+After generation, configure the generated sources to be included in your project. Update your `pom.xml` to include the generated sources:
+
+[source, xml, options=nowrap]
+----
+<build>
+    <sourceDirectory>${project.build.directory}/generated-sources/src/main/java</sourceDirectory>
+    <!-- other build configurations -->
+</build>
+----
+
+==== Verify and Use the Feign Client
+Now, you can autowire and use the Feign clients in your Spring Boot application by calling the generated endpoints. The Feign client will handle communication with the API defined in the OpenAPI specification.
+
+This setup allows your Spring Boot application to make API calls using the generated Feign clients based on the OpenAPI definition.
+
+

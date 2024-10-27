@@ -516,21 +516,27 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_validations_in_spring_boot">Validations in Spring Boot</a>
+<li><a href="#_validations_in_spring_boot">1. Validations in Spring Boot</a>
 <ul class="sectlevel2">
-<li><a href="#_1_basic_bean_validation_annotations">1. Basic Bean Validation Annotations</a></li>
-<li><a href="#_2_validating_request_bodies_in_controllers">2. Validating Request Bodies in Controllers</a></li>
-<li><a href="#_3_programmatic_validation_using_javas_validator">3. Programmatic Validation Using Java&#8217;s Validator</a></li>
-<li><a href="#_4_custom_error_responses">4. Custom Error Responses</a></li>
-<li><a href="#_5_custom_validators">5. Custom Validators</a></li>
-<li><a href="#_5_groups_and_conditional_validation">5. Groups and Conditional Validation</a></li>
-<li><a href="#_conclusion">Conclusion</a></li>
+<li><a href="#_1_basic_bean_validation_annotations">1.1. 1. Basic Bean Validation Annotations</a></li>
+<li><a href="#_validating_request_bodies_in_controllers">1.2. Validating Request Bodies in Controllers</a></li>
+<li><a href="#_programmatic_validation_using_javas_validator">1.3. Programmatic Validation Using Java&#8217;s Validator</a></li>
+<li><a href="#_custom_error_responses">1.4. Custom Error Responses</a></li>
+<li><a href="#_custom_validators">1.5. Custom Validators</a></li>
+<li><a href="#_groups_and_conditional_validation">1.6. Groups and Conditional Validation</a></li>
+<li><a href="#_conclusion">1.7. Conclusion</a></li>
 </ul>
 </li>
-<li><a href="#_dynamically_generating_json_payloads_for_rest_api_testing">Dynamically Generating JSON Payloads for REST API Testing</a>
+<li><a href="#_dynamically_generating_json_payloads_for_rest_api_testing">2. Dynamically Generating JSON Payloads for REST API Testing</a>
 <ul class="sectlevel2">
-<li><a href="#_1_dynamic_object_creation_with_dummy_data_using_reflection">1. Dynamic Object Creation with Dummy Data Using Reflection</a></li>
-<li><a href="#_2_generate_the_json_output_from_the_object">2. Generate the JSON output from the object</a></li>
+<li><a href="#_1_dynamic_object_creation_with_dummy_data_using_reflection">2.1. 1. Dynamic Object Creation with Dummy Data Using Reflection</a></li>
+<li><a href="#_2_generate_the_json_output_from_the_object">2.2. 2. Generate the JSON output from the object</a></li>
+</ul>
+</li>
+<li><a href="#_openapi_and_its_role_in_automating_rest_api_client_creation">3. OpenAPI and Its Role in Automating REST API Client Creation</a>
+<ul class="sectlevel2">
+<li><a href="#_generating_openapi_specification_in_spring_boot">3.1. Generating OpenAPI Specification in Spring Boot</a></li>
+<li><a href="#_generating_a_feign_client_in_spring_boot_using_openapi_generator">3.2. Generating a Feign Client in Spring Boot using OpenAPI Generator</a></li>
 </ul>
 </li>
 </ul>
@@ -538,13 +544,13 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_validations_in_spring_boot">Validations in Spring Boot</h2>
+<h2 id="_validations_in_spring_boot">1. Validations in Spring Boot</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>In Spring Boot, validations are a key feature for ensuring that the data in your application conforms to certain rules before it is processed or saved. Spring Boot uses Java Bean Validation (JSR-303/JSR-380) as its default validation framework, which is powered by Hibernate Validator.</p>
 </div>
 <div class="sect2">
-<h3 id="_1_basic_bean_validation_annotations">1. Basic Bean Validation Annotations</h3>
+<h3 id="_1_basic_bean_validation_annotations">1.1. 1. Basic Bean Validation Annotations</h3>
 <div class="paragraph">
 <p>You can add annotations to the fields in your model or entity classes to enforce validation constraints. Common annotations include:</p>
 </div>
@@ -643,7 +649,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_validating_request_bodies_in_controllers">2. Validating Request Bodies in Controllers</h3>
+<h3 id="_validating_request_bodies_in_controllers">1.2. Validating Request Bodies in Controllers</h3>
 <div class="paragraph">
 <p>When accepting data from the client (like a POST or PUT request), you can use the <code>@Valid</code> or <code>@Validated</code> annotation to trigger validation on the incoming data.</p>
 </div>
@@ -672,7 +678,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_3_programmatic_validation_using_javas_validator">3. Programmatic Validation Using Java&#8217;s Validator</h3>
+<h3 id="_programmatic_validation_using_javas_validator">1.3. Programmatic Validation Using Java&#8217;s Validator</h3>
 <div class="paragraph">
 <p>One can also perform the validation programmatically like this:</p>
 </div>
@@ -746,7 +752,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_custom_error_responses">4. Custom Error Responses</h3>
+<h3 id="_custom_error_responses">1.4. Custom Error Responses</h3>
 <div class="paragraph">
 <p>You can customize how validation errors are handled by defining an exception handler for <code>MethodArgumentNotValidException</code> in your <code>@ControllerAdvice</code> class:</p>
 </div>
@@ -775,7 +781,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_5_custom_validators">5. Custom Validators</h3>
+<h3 id="_custom_validators">1.5. Custom Validators</h3>
 <div class="paragraph">
 <p>You can create your own custom validation annotations if the built-in ones do not cover your use case. For example, you can create a <code>@ValidAge</code> annotation to validate an age field.</p>
 </div>
@@ -809,7 +815,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="2">
 <li>
 <p>Implement the validator:</p>
 </li>
@@ -830,7 +836,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="olist arabic">
-<ol class="arabic">
+<ol class="arabic" start="3">
 <li>
 <p>Use the custom validator in your model:</p>
 </li>
@@ -848,7 +854,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_5_groups_and_conditional_validation">5. Groups and Conditional Validation</h3>
+<h3 id="_groups_and_conditional_validation">1.6. Groups and Conditional Validation</h3>
 <div class="paragraph">
 <p>In more advanced scenarios, you can define validation groups to apply different validation rules in different contexts using the <code>groups</code> attribute of constraint annotations.</p>
 </div>
@@ -883,7 +889,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_conclusion">Conclusion</h3>
+<h3 id="_conclusion">1.7. Conclusion</h3>
 <div class="paragraph">
 <p>Spring Boot validations offer a comprehensive way to validate user input through annotations, ensuring that your application&#8217;s data is consistent and safe to use. The framework provides both out-of-the-box validations and the flexibility to create custom rules when needed.</p>
 </div>
@@ -891,7 +897,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect1">
-<h2 id="_dynamically_generating_json_payloads_for_rest_api_testing">Dynamically Generating JSON Payloads for REST API Testing</h2>
+<h2 id="_dynamically_generating_json_payloads_for_rest_api_testing">2. Dynamically Generating JSON Payloads for REST API Testing</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>When developing a REST API, I often need to test endpoints that accept objects in JSON format. To do this, I need to create instances of the objects involved in the request payload, ensuring that all fields are populated with dummy data. I wrote a method that dynamically generates instances for any given class, eliminating the need to manually create them—a process that can be cumbersome, especially for complex objects.</p>
@@ -900,7 +906,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <p>Furthermore, I created a method that converts any class instance into a human-readable JSON format, allowing me to adjust the values if needed afterward.</p>
 </div>
 <div class="sect2">
-<h3 id="_1_dynamic_object_creation_with_dummy_data_using_reflection">1. Dynamic Object Creation with Dummy Data Using Reflection</h3>
+<h3 id="_1_dynamic_object_creation_with_dummy_data_using_reflection">2.1. 1. Dynamic Object Creation with Dummy Data Using Reflection</h3>
 <div class="paragraph">
 <p>The method for dynamically creating an object populated with dummy data is based on reflection. Here&#8217;s the method:</p>
 </div>
@@ -977,7 +983,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_generate_the_json_output_from_the_object">2. Generate the JSON output from the object</h3>
+<h3 id="_2_generate_the_json_output_from_the_object">2.2. 2. Generate the JSON output from the object</h3>
 <div class="paragraph">
 <p>We use Jackson to convert a class instance into a JSON string. Jackson automatically handles most field types, including nested objects, enums, and even <code>BigDecimal</code> and <code>LocalDate</code>.</p>
 </div>
@@ -1061,10 +1067,228 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_openapi_and_its_role_in_automating_rest_api_client_creation">3. OpenAPI and Its Role in Automating REST API Client Creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>OpenAPI is a standard specification for defining REST APIs in a structured, machine-readable format (usually YAML or JSON). It describes endpoints, request and response formats, data models, and authentication methods, providing a blueprint of an API&#8217;s functionality.</p>
+</div>
+<div class="paragraph">
+<p>By using OpenAPI, developers can automatically generate client code for REST APIs in multiple languages, saving time and reducing errors. This approach ensures consistency with the API&#8217;s specification, making it easier to integrate with APIs and keep client code in sync when APIs evolve.</p>
+</div>
+<div class="sect2">
+<h3 id="_generating_openapi_specification_in_spring_boot">3.1. Generating OpenAPI Specification in Spring Boot</h3>
+<div class="sect3">
+<h4 id="_adding_dependencies">3.1.1. Adding Dependencies</h4>
+<div class="paragraph">
+<p>First, ensure that you have added the necessary <code>springdoc-openapi</code> dependency in your <code>pom.xml</code> file.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">  </span><span class="tok-nt">&lt;groupId&gt;</span>org.springdoc<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">  </span><span class="tok-nt">&lt;artifactId&gt;</span>springdoc-openapi-starter-webmvc-ui<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">  </span><span class="tok-nt">&lt;version&gt;</span>2.2.0<span class="tok-nt">&lt;/version&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_accessing_the_yaml_version_of_the_openapi_documentation">3.1.2. Accessing the YAML Version of the OpenAPI Documentation</h4>
+<div class="paragraph">
+<p>By default, SpringDoc provides both JSON and YAML versions of your OpenAPI specification. You don’t need additional configuration to access the YAML version. The endpoints are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>JSON format: visit the URL <code>/v3/api-docs</code> (e.g., <code><a href="http://localhost:8080/v3/api-docs" class="bare">http://localhost:8080/v3/api-docs</a></code>).</p>
+</li>
+<li>
+<p>YAML format: visit the URL <code>/v3/api-docs.yaml</code> (e.g., <code><a href="http://localhost:8080/v3/api-docs.yaml" class="bare">http://localhost:8080/v3/api-docs.yaml</a></code>).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_optional_swagger_ui">3.1.3. Optional: Swagger UI</h4>
+<div class="paragraph">
+<p>If you are using Swagger UI for interactive API documentation, you can also toggle between viewing the OpenAPI specification in either JSON or YAML format.</p>
+</div>
+<div class="paragraph">
+<p>Swagger UI can be accessed at:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Swagger UI: <code><a href="http://localhost:8080/swagger-ui.html" class="bare">http://localhost:8080/swagger-ui.html</a></code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generating_a_feign_client_in_spring_boot_using_openapi_generator">3.2. Generating a Feign Client in Spring Boot using OpenAPI Generator</h3>
+<div class="paragraph">
+<p>To generate a Feign client from an OpenAPI YAML file in a Spring Boot project, use the OpenAPI Generator plugin.</p>
+</div>
+<div class="sect3">
+<h4 id="_add_openapi_generator_plugin_to_maven">3.2.1. Add OpenAPI Generator Plugin to Maven</h4>
+<div class="paragraph">
+<p>Add the following plugin to your <code>pom.xml</code> file to enable code generation with OpenAPI Generator.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="xml"><span></span><span class="tok-nt">&lt;build&gt;</span>
+<span class="tok-w">  </span><span class="tok-nt">&lt;plugins&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;plugin&gt;</span>
+<span class="tok-w">      </span><span class="tok-nt">&lt;groupId&gt;</span>org.openapitools<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">      </span><span class="tok-nt">&lt;artifactId&gt;</span>openapi-generator-maven-plugin<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">      </span><span class="tok-nt">&lt;version&gt;</span>7.9.0<span class="tok-nt">&lt;/version&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Check for the latest version --&gt;</span>
+<span class="tok-w">      </span><span class="tok-nt">&lt;executions&gt;</span>
+<span class="tok-w">        </span><span class="tok-nt">&lt;execution&gt;</span>
+<span class="tok-w">          </span><span class="tok-nt">&lt;goals&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;goal&gt;</span>generate<span class="tok-nt">&lt;/goal&gt;</span>
+<span class="tok-w">          </span><span class="tok-nt">&lt;/goals&gt;</span>
+<span class="tok-w">          </span><span class="tok-nt">&lt;configuration&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;inputSpec&gt;</span>${project.basedir}/src/main/resources/openapi.yaml<span class="tok-nt">&lt;/inputSpec&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;generatorName&gt;</span>spring<span class="tok-nt">&lt;/generatorName&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;apiPackage&gt;</span>de.tramotech.openapi.api<span class="tok-nt">&lt;/apiPackage&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;modelPackage&gt;</span>de.tramotech.openapi.model<span class="tok-nt">&lt;/modelPackage&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;output&gt;</span>${project.basedir}/gen-src<span class="tok-nt">&lt;/output&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;configOptions&gt;</span>
+<span class="tok-w">              </span><span class="tok-nt">&lt;library&gt;</span>spring-cloud<span class="tok-nt">&lt;/library&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Enables Feign client generation --&gt;</span>
+<span class="tok-w">            </span><span class="tok-nt">&lt;/configOptions&gt;</span>
+<span class="tok-w">          </span><span class="tok-nt">&lt;/configuration&gt;</span>
+<span class="tok-w">       </span><span class="tok-nt">&lt;/execution&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;/executions&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;/plugin&gt;</span>
+<span class="tok-w">  </span><span class="tok-nt">&lt;/plugins&gt;</span>
+<span class="tok-nt">&lt;/build&gt;</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Ensure that the <code>inputSpec</code> path points to your OpenAPI YAML file.</p>
+</li>
+</ol>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="2">
+<li>
+<p>Specify Output Directory
+Set the output directory where the generated code will be stored (e.g., <code>generated-sources</code> in this example).</p>
+</li>
+</ol>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="3">
+<li>
+<p>Configure Feign Client Library
+Set <code>configOptions.library</code> to <code>spring-cloud</code> to generate Feign-based API clients.</p>
+</li>
+</ol>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="4">
+<li>
+<p>Add Required Dependencies
+In your <code>pom.xml</code>, add the following dependencies to support Feign client generation and JSON processing.</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="xml"><span></span><span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>com.fasterxml.jackson.core<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>jackson-annotations<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>com.fasterxml.jackson.core<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>jackson-databind<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>io.github.openfeign<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>feign-jackson<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>12.3<span class="tok-nt">&lt;/version&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Or latest stable version --&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>org.openapitools<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>jackson-databind-nullable<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>0.2.4<span class="tok-nt">&lt;/version&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Or latest stable version --&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>io.github.openfeign<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>feign-okhttp<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>12.3<span class="tok-nt">&lt;/version&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Or latest stable version --&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>javax.annotation<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>javax.annotation-api<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>1.3.2<span class="tok-nt">&lt;/version&gt;</span><span class="tok-w"> </span><span class="tok-cm">&lt;!-- Or latest stable version --&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span>
+
+<span class="tok-nt">&lt;dependency&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;groupId&gt;</span>javax.validation<span class="tok-nt">&lt;/groupId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;artifactId&gt;</span>validation-api<span class="tok-nt">&lt;/artifactId&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;version&gt;</span>2.0.1.Final<span class="tok-nt">&lt;/version&gt;</span>
+<span class="tok-nt">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="5">
+<li>
+<p>Run the Plugin
+To generate the client, run the following Maven command in your project directory:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="shell"><span></span>mvn<span class="tok-w"> </span>clean<span class="tok-w"> </span>install</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command will generate the Feign client code based on the OpenAPI YAML file and place it in the specified output directory.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="6">
+<li>
+<p>Add Generated Code to the Project
+After generation, configure the generated sources to be included in your project. Update your <code>pom.xml</code> to include the generated sources:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="xml"><span></span><span class="tok-nt">&lt;build&gt;</span>
+<span class="tok-w">    </span><span class="tok-nt">&lt;sourceDirectory&gt;</span>${project.build.directory}/generated-sources/src/main/java<span class="tok-nt">&lt;/sourceDirectory&gt;</span>
+<span class="tok-w">    </span><span class="tok-cm">&lt;!-- other build configurations --&gt;</span>
+<span class="tok-nt">&lt;/build&gt;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_verify_and_use_the_feign_client">3.2.2. Verify and Use the Feign Client</h4>
+<div class="paragraph">
+<p>Now, you can autowire and use the Feign clients in your Spring Boot application by calling the generated endpoints. The Feign client will handle communication with the API defined in the OpenAPI specification.</p>
+</div>
+<div class="paragraph">
+<p>This setup allows your Spring Boot application to make API calls using the generated Feign clients based on the OpenAPI definition.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-20 07:22:49 +0200
+Last updated 2024-10-27 13:10:06 +0100
 </div>
 </div>
 </body>
