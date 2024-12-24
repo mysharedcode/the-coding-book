@@ -539,6 +539,14 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_generating_a_feign_client_in_spring_boot_using_openapi_generator">3.2. Generating a Feign Client in Spring Boot using OpenAPI Generator</a></li>
 </ul>
 </li>
+<li><a href="#_regular_expressions_in_java">4. Regular Expressions in Java</a>
+<ul class="sectlevel2">
+<li><a href="#_basics_of_regex_in_java">4.1. Basics of Regex in Java</a></li>
+<li><a href="#_common_regex_patterns">4.2. Common Regex Patterns</a></li>
+<li><a href="#_using_groups_with_parentheses">4.3. Using Groups with Parentheses</a></li>
+<li><a href="#_tips_for_using_regex_in_java">4.4. Tips for Using Regex in Java</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -1285,10 +1293,348 @@ After generation, configure the generated sources to be included in your project
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_regular_expressions_in_java">4. Regular Expressions in Java</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Regular expressions (regex) are a powerful tool for pattern matching and text processing. Java provides robust support for regex through the <code>java.util.regex</code> package.</p>
+</div>
+<div class="sect2">
+<h3 id="_basics_of_regex_in_java">4.1. Basics of Regex in Java</h3>
+<div class="paragraph">
+<p>To work with regex in Java, you typically use the following classes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Pattern</code>: Represents the compiled regex.</p>
+</li>
+<li>
+<p><code>Matcher</code>: Provides functionality for matching the regex against text.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_steps_to_use_regex">4.1.1. Steps to Use Regex</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Define a Regex Pattern</strong>:</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Use a string to describe the desired pattern. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-w">  </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">regex</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;\\d+&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Matches one or more digits</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="2">
+<li>
+<p><strong>Compile the Pattern</strong>:</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Compile the regex into a <code>Pattern</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-w">  </span><span class="tok-n">Pattern</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Pattern</span><span class="tok-p">.</span><span class="tok-na">compile</span><span class="tok-p">(</span><span class="tok-n">regex</span><span class="tok-p">);</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="3">
+<li>
+<p><strong>Match the Pattern</strong>:</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Create a <code>Matcher</code> object by calling <code>matcher()</code> on the <code>Pattern</code> with the input text:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-w">  </span><span class="tok-n">Matcher</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-p">.</span><span class="tok-na">matcher</span><span class="tok-p">(</span><span class="tok-s">&quot;Sample text 123&quot;</span><span class="tok-p">);</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="4">
+<li>
+<p><strong>Find Matches</strong>:</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Use methods like <code>find()</code> or <code>matches()</code> on the <code>Matcher</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-w"> </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">find</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Found: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">());</span>
+<span class="tok-w"> </span><span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_common_regex_patterns">4.2. Common Regex Patterns</h3>
+<div class="paragraph">
+<p>Here are some frequently used regex patterns:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pattern</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>\\d</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any digit (0-9).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>\\D</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any non-digit.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>\\w</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any word character (letters, digits, and underscores).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>\\W</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any non-word character.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>\\s</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any whitespace (spaces, tabs, newlines).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>\\S</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any non-whitespace character.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[abc]</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any character in the set (a, b, or c).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[^abc]</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches any character not in the set.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>a*</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches zero or more occurrences of <code>a</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>a+</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches one or more occurrences of <code>a</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>a?</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matches zero or one occurrence of <code>a</code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_using_groups_with_parentheses">4.3. Using Groups with Parentheses</h3>
+<div class="paragraph">
+<p>Parentheses <code>()</code> are used in regex to create capturing groups. A capturing group allows you to extract a specific portion of the matched text. Additionally, non-capturing groups and other advanced grouping mechanisms can modify the behavior of parentheses. Here&#8217;s an explanation with examples:</p>
+</div>
+<div class="sect3">
+<h4 id="_example_extracting_parts_of_a_date">4.3.1. Example: Extracting Parts of a Date</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.regex.*</span><span class="tok-p">;</span>
+
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">DateExtractor</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-kt">void</span><span class="tok-w"> </span><span class="tok-nf">main</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-o">[]</span><span class="tok-w"> </span><span class="tok-n">args</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">text</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;Today&#39;s date is 2024-12-24.&quot;</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-c1">// Regex with groups for year, month, and day</span>
+<span class="tok-w">        </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">dateRegex</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;(\\d{4})-(\\d{2})-(\\d{2})&quot;</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-n">Pattern</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Pattern</span><span class="tok-p">.</span><span class="tok-na">compile</span><span class="tok-p">(</span><span class="tok-n">dateRegex</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-n">Matcher</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-p">.</span><span class="tok-na">matcher</span><span class="tok-p">(</span><span class="tok-n">text</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">find</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-c1">// Extracting groups</span>
+<span class="tok-w">            </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">year</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">(</span><span class="tok-mi">1</span><span class="tok-p">);</span>
+<span class="tok-w">            </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">month</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">(</span><span class="tok-mi">2</span><span class="tok-p">);</span>
+<span class="tok-w">            </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">day</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">(</span><span class="tok-mi">3</span><span class="tok-p">);</span>
+<span class="tok-w">            </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Year: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">year</span><span class="tok-p">);</span>
+<span class="tok-w">            </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Month: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">month</span><span class="tok-p">);</span>
+<span class="tok-w">            </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Day: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">day</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;No date found.&quot;</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_output">4.3.2. Output:</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code><span></span>Year: 2024
+Month: 12
+Day: 24</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_explanation_of_grouping">4.3.3. Explanation of Grouping</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>(\\d{4})</code> captures the year.</p>
+</li>
+<li>
+<p><code>(\\d{2})</code> captures the month.</p>
+</li>
+<li>
+<p><code>(\\d{2})</code> captures the day.</p>
+</li>
+<li>
+<p>The <code>group()</code> method retrieves the text matched by each group.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_non_capturing_groups">4.3.4. Non-Capturing Groups</h4>
+<div class="paragraph">
+<p>If you want to group expressions without creating a capturing group, use <code>(?:&#8230;&#8203;)</code>. This is useful when you need to group for logical structure but don’t need to extract the matched content.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">regex</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;(?:Mr|Ms|Dr)\\. [A-Z][a-z]+&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Matches titles like &#39;Mr. Smith&#39;</span>
+<span class="tok-n">Pattern</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Pattern</span><span class="tok-p">.</span><span class="tok-na">compile</span><span class="tok-p">(</span><span class="tok-n">regex</span><span class="tok-p">);</span>
+<span class="tok-n">Matcher</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-p">.</span><span class="tok-na">matcher</span><span class="tok-p">(</span><span class="tok-s">&quot;Dr. Brown is here.&quot;</span><span class="tok-p">);</span>
+<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">find</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Match found: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">());</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_positive_and_negative_lookahead">4.3.5. Positive and Negative Lookahead</h4>
+<div class="paragraph">
+<p>Lookaheads allow you to assert that certain patterns follow (or don’t follow) without including them in the match:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Positive Lookahead: <code>(?=&#8230;&#8203;)</code></p>
+</li>
+<li>
+<p>Negative Lookahead: <code>(?!&#8230;&#8203;)</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">regex</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;\\d{4}(?=-12-24)&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Matches &#39;2024&#39; only if followed by &#39;-12-24&#39;</span>
+<span class="tok-n">Pattern</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Pattern</span><span class="tok-p">.</span><span class="tok-na">compile</span><span class="tok-p">(</span><span class="tok-n">regex</span><span class="tok-p">);</span>
+<span class="tok-n">Matcher</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-p">.</span><span class="tok-na">matcher</span><span class="tok-p">(</span><span class="tok-s">&quot;2024-12-24&quot;</span><span class="tok-p">);</span>
+<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">find</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Year found: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">());</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_lookbehind_assertions">4.3.6. Lookbehind Assertions</h4>
+<div class="paragraph">
+<p>Lookbehinds assert that certain patterns precede the current position:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Positive Lookbehind: <code>(?&#8656;&#8230;&#8203;)</code></p>
+</li>
+<li>
+<p>Negative Lookbehind: <code>(?&lt;!&#8230;&#8203;)</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">regex</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;(?&lt;=@)\\w+&quot;</span><span class="tok-p">;</span><span class="tok-w"> </span><span class="tok-c1">// Matches domain name after &#39;@&#39; in an email</span>
+<span class="tok-n">Pattern</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Pattern</span><span class="tok-p">.</span><span class="tok-na">compile</span><span class="tok-p">(</span><span class="tok-n">regex</span><span class="tok-p">);</span>
+<span class="tok-n">Matcher</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-p">.</span><span class="tok-na">matcher</span><span class="tok-p">(</span><span class="tok-s">&quot;contact@example.com&quot;</span><span class="tok-p">);</span>
+
+<span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">find</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Domain: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">());</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_email_extraction">4.3.7. Example: Email Extraction</h4>
+<div class="paragraph">
+<p>This example demonstrates how to use regex to extract email addresses from text:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.regex.Matcher</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.regex.Pattern</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.ArrayList</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.List</span><span class="tok-p">;</span>
+
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">EmailExtractor</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">String</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-nf">extractEmails</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">text</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">emailRegex</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}&quot;</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-n">Pattern</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Pattern</span><span class="tok-p">.</span><span class="tok-na">compile</span><span class="tok-p">(</span><span class="tok-n">emailRegex</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-n">Matcher</span><span class="tok-w"> </span><span class="tok-n">matcher</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">pattern</span><span class="tok-p">.</span><span class="tok-na">matcher</span><span class="tok-p">(</span><span class="tok-n">text</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">String</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">emails</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">ArrayList</span><span class="tok-o">&lt;&gt;</span><span class="tok-p">();</span>
+<span class="tok-w">        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">find</span><span class="tok-p">())</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-n">emails</span><span class="tok-p">.</span><span class="tok-na">add</span><span class="tok-p">(</span><span class="tok-n">matcher</span><span class="tok-p">.</span><span class="tok-na">group</span><span class="tok-p">());</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">        </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">emails</span><span class="tok-p">;</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-kt">void</span><span class="tok-w"> </span><span class="tok-nf">main</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-o">[]</span><span class="tok-w"> </span><span class="tok-n">args</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">text</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;Contact support@example.com or admin@mysite.net.&quot;</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">String</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">emails</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">extractEmails</span><span class="tok-p">(</span><span class="tok-n">text</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">email</span><span class="tok-w"> </span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-n">emails</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-n">email</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tips_for_using_regex_in_java">4.4. Tips for Using Regex in Java</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Escape Special Characters</strong>: Use double backslashes (<code>\\</code>) to escape special characters like <code>.</code> or <code>*</code>.</p>
+</li>
+<li>
+<p><strong>Use Predefined Classes</strong>: Use predefined character classes (e.g., <code>\\d</code>, <code>\\w</code>) for simplicity.</p>
+</li>
+<li>
+<p><strong>Compile Once</strong>: If using the same regex multiple times, compile it once for efficiency.</p>
+</li>
+<li>
+<p>Online Regex Tester: <a href="https://regex101.com/" class="bare">https://regex101.com/</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-27 13:10:06 +0100
+Last updated 2024-12-24 08:37:18 +0100
 </div>
 </div>
 </body>

@@ -10,3 +10,5 @@ include::chapters/Dynamically-Generating-JSON-Payloads-for-REST-API-Testing.adoc
 
 include::chapters/openapi.adoc[]
 
+include::chapters/java_regex_guide.adoc[]
+

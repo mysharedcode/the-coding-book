@@ -1,0 +1,218 @@
+== Regular Expressions in Java
+
+Regular expressions (regex) are a powerful tool for pattern matching and text processing. Java provides robust support for regex through the `java.util.regex` package.
+
+=== Basics of Regex in Java
+
+To work with regex in Java, you typically use the following classes:
+
+- `Pattern`: Represents the compiled regex.
+- `Matcher`: Provides functionality for matching the regex against text.
+
+==== Steps to Use Regex
+
+. **Define a Regex Pattern**:
+
+Use a string to describe the desired pattern. For example:
+
+[source,java,options=nowrap]
+----
+  String regex = "\\d+"; // Matches one or more digits
+----
+
+[start=2]
+. **Compile the Pattern**:
+
+Compile the regex into a `Pattern` object:
+
+[source,java,options=nowrap]
+----
+  Pattern pattern = Pattern.compile(regex);
+----
+
+[start=3]
+. **Match the Pattern**:
+
+Create a `Matcher` object by calling `matcher()` on the `Pattern` with the input text:
+
+[source,java,options=nowrap]
+----
+  Matcher matcher = pattern.matcher("Sample text 123");
+----
+
+[start=4]
+. **Find Matches**:
+
+Use methods like `find()` or `matches()` on the `Matcher` object:
+
+[source,java,options=nowrap]
+----
+ while (matcher.find()) {
+    System.out.println("Found: " + matcher.group());
+ }
+----
+
+=== Common Regex Patterns
+
+Here are some frequently used regex patterns:
+
+[cols="1,2"]
+|===
+| Pattern | Description
+| `\\d`  | Matches any digit (0-9).
+| `\\D`  | Matches any non-digit.
+| `\\w`  | Matches any word character (letters, digits, and underscores).
+| `\\W`  | Matches any non-word character.
+| `\\s`  | Matches any whitespace (spaces, tabs, newlines).
+| `\\S`  | Matches any non-whitespace character.
+| `[abc]` | Matches any character in the set (a, b, or c).
+| `[^abc]`| Matches any character not in the set.
+| `a*`    | Matches zero or more occurrences of `a`.
+| `a+`    | Matches one or more occurrences of `a`.
+| `a?`    | Matches zero or one occurrence of `a`.
+|===
+
+=== Using Groups with Parentheses
+
+Parentheses `()` are used in regex to create capturing groups. A capturing group allows you to extract a specific portion of the matched text. Additionally, non-capturing groups and other advanced grouping mechanisms can modify the behavior of parentheses. Here's an explanation with examples:
+
+==== Example: Extracting Parts of a Date
+
+[source,java,options=nowrap]
+----
+import java.util.regex.*;
+
+public class DateExtractor {
+    public static void main(String[] args) {
+        String text = "Today's date is 2024-12-24.";
+        // Regex with groups for year, month, and day
+        String dateRegex = "(\\d{4})-(\\d{2})-(\\d{2})";
+        Pattern pattern = Pattern.compile(dateRegex);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            // Extracting groups
+            String year = matcher.group(1);
+            String month = matcher.group(2);
+            String day = matcher.group(3);
+            System.out.println("Year: " + year);
+            System.out.println("Month: " + month);
+            System.out.println("Day: " + day);
+        } else {
+            System.out.println("No date found.");
+        }
+    }
+}
+----
+
+==== Output:
+
+```
+Year: 2024
+Month: 12
+Day: 24
+```
+
+==== Explanation of Grouping
+
+- `(\\d{4})` captures the year.
+- `(\\d{2})` captures the month.
+- `(\\d{2})` captures the day.
+- The `group()` method retrieves the text matched by each group.
+
+==== Non-Capturing Groups
+
+If you want to group expressions without creating a capturing group, use `(?:...)`. This is useful when you need to group for logical structure but don’t need to extract the matched content.
+
+[source,java,options=nowrap]
+----
+String regex = "(?:Mr|Ms|Dr)\\. [A-Z][a-z]+"; // Matches titles like 'Mr. Smith'
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher("Dr. Brown is here.");
+if (matcher.find()) {
+    System.out.println("Match found: " + matcher.group());
+}
+----
+
+==== Positive and Negative Lookahead
+
+Lookaheads allow you to assert that certain patterns follow (or don’t follow) without including them in the match:
+
+- Positive Lookahead: `(?=...)`
+
+- Negative Lookahead: `(?!...)`
+
+
+[source,java,options=nowrap]
+----
+String regex = "\\d{4}(?=-12-24)"; // Matches '2024' only if followed by '-12-24'
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher("2024-12-24");
+if (matcher.find()) {
+    System.out.println("Year found: " + matcher.group());
+}
+----
+
+==== Lookbehind Assertions
+
+Lookbehinds assert that certain patterns precede the current position:
+
+- Positive Lookbehind: `(?<=...)`
+
+- Negative Lookbehind: `(?<!...)`
+
+
+[source,java,options=nowrap]
+----
+String regex = "(?<=@)\\w+"; // Matches domain name after '@' in an email
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher("contact@example.com");
+
+if (matcher.find()) {
+    System.out.println("Domain: " + matcher.group());
+}
+----
+
+==== Example: Email Extraction
+
+This example demonstrates how to use regex to extract email addresses from text:
+
+[source,java,options=nowrap]
+----
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EmailExtractor {
+    public static List<String> extractEmails(String text) {
+        String emailRegex = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(text);
+        List<String> emails = new ArrayList<>();
+        while (matcher.find()) {
+            emails.add(matcher.group());
+        }
+        return emails;
+    }
+
+    public static void main(String[] args) {
+        String text = "Contact support@example.com or admin@mysite.net.";
+        List<String> emails = extractEmails(text);
+        for (String email : emails) {
+            System.out.println(email);
+        }
+    }
+}
+----
+
+=== Tips for Using Regex in Java
+
+- **Escape Special Characters**: Use double backslashes (`\\`) to escape special characters like `.` or `*`.
+
+- **Use Predefined Classes**: Use predefined character classes (e.g., `\\d`, `\\w`) for simplicity.
+
+- **Compile Once**: If using the same regex multiple times, compile it once for efficiency.
+
+
+
+- Online Regex Tester: https://regex101.com/
