@@ -1,0 +1,57 @@
+== Analyzing HTTP Request Timing with curl
+
+This tutorial demonstrates how to measure the time spent in each stage of an HTTP request when using `curl`. The stages include name resolution, connection establishment, data transfer, and more.
+
+=== Step 1: Use the `-w` Option for Timing Details
+
+The `-w` (write-out) option in `curl` allows you to specify variables to be displayed after the operation. Use the following variables to measure the time for each stage:
+
+* `time_namelookup`: Time from the start until the name resolving is completed.
+* `time_connect`: Time from the start until the TCP connection is established.
+* `time_appconnect`: Time from the start until the SSL/SSH/etc. handshake is completed (if applicable).
+* `time_pretransfer`: Time from the start until the file transfer is just about to begin.
+* `time_starttransfer`: Time from the start until the first byte is received from the server.
+* `time_total`: Total time for the entire operation.
+
+==== Example Command
+
+[source,bash,options=nowrap]
+----
+curl -o /dev/null -s -w "\nName Lookup: %{time_namelookup}\nConnect: %{time_connect}\nApp Connect: %{time_appconnect}\nPre Transfer: %{time_pretransfer}\nStart Transfer: %{time_starttransfer}\nTotal Time: %{time_total}\n" http://example.com
+----
+
+In this example:
+* `-o /dev/null`: Discards the response body.
+* `-s`: Suppresses progress output.
+* `-w`: Specifies the format of the output.
+
+=== Step 2: Save Timing Details to a File
+
+To save the timing details to a file, redirect the output:
+
+[source,bash,options=nowrap]
+----
+curl -o /dev/null -s -w "\nName Lookup: %{time_namelookup}\nConnect: %{time_connect}\nApp Connect: %{time_appconnect}\nPre Transfer: %{time_pretransfer}\nStart Transfer: %{time_starttransfer}\nTotal Time: %{time_total}\n" http://example.com > timing_details.txt
+----
+
+This saves the timing information to `timing_details.txt` for later analysis.
+
+=== Step 3: Combine Timing with Other Debugging Options
+
+To include headers and verbose debugging information along with timing details, combine `-v` or `-I` with `-w`:
+
+[source,bash,options=nowrap]
+----
+curl -v -o /dev/null -s -w "\nName Lookup: %{time_namelookup}\nConnect: %{time_connect}\nApp Connect: %{time_appconnect}\nPre Transfer: %{time_pretransfer}\nStart Transfer: %{time_starttransfer}\nTotal Time: %{time_total}\n" http://example.com
+----
+
+This provides a complete picture of the request process, including headers and timing.
+
+=== Summary
+
+1. Use `curl -w` to display timing details for each stage of an HTTP request.
+2. Save the timing details to a file for analysis using output redirection.
+3. Combine `-w` with other debugging options like `-v` for a comprehensive understanding of the request process.
+
+These steps allow you to diagnose performance bottlenecks and analyze the time taken at each stage of an HTTP request using `curl`. 
+

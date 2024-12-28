@@ -12,3 +12,7 @@ include::chapters/openapi.adoc[]
 
 include::chapters/java_regex_guide.adoc[]
 
+include::chapters/Spring-Boot-Endpoint-Compression.adoc[]
+
+include::chapters/Analyzing-HTTP-Request-Timing-with-curl.adoc[]
+

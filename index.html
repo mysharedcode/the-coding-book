@@ -547,6 +547,23 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_tips_for_using_regex_in_java">4.4. Tips for Using Regex in Java</a></li>
 </ul>
 </li>
+<li><a href="#_spring_boot_endpoint_compression_and_client_consumption_tutorial">5. Spring Boot Endpoint Compression and Client Consumption Tutorial</a>
+<ul class="sectlevel2">
+<li><a href="#_step_1_enable_compression_in_spring_boot">5.1. Step 1: Enable Compression in Spring Boot</a></li>
+<li><a href="#_step_2_create_a_spring_boot_endpoint">5.2. Step 2: Create a Spring Boot Endpoint</a></li>
+<li><a href="#_step_3_consume_the_compressed_response_with_feign_client">5.3. Step 3: Consume the Compressed Response with Feign Client</a></li>
+<li><a href="#_step_4_consume_the_compressed_response_with_curl">5.4. Step 4: Consume the Compressed Response with <code>curl</code></a></li>
+<li><a href="#_summary">5.5. Summary</a></li>
+</ul>
+</li>
+<li><a href="#_analyzing_http_request_timing_with_curl">6. Analyzing HTTP Request Timing with curl</a>
+<ul class="sectlevel2">
+<li><a href="#_step_1_use_the_w_option_for_timing_details">6.1. Step 1: Use the <code>-w</code> Option for Timing Details</a></li>
+<li><a href="#_step_2_save_timing_details_to_a_file">6.2. Step 2: Save Timing Details to a File</a></li>
+<li><a href="#_step_3_combine_timing_with_other_debugging_options">6.3. Step 3: Combine Timing with Other Debugging Options</a></li>
+<li><a href="#_summary_2">6.4. Summary</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -1631,10 +1648,392 @@ Day: 24</code></pre>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_spring_boot_endpoint_compression_and_client_consumption_tutorial">5. Spring Boot Endpoint Compression and Client Consumption Tutorial</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This tutorial explains how to enable gzip compression in a Spring Boot endpoint, and how to consume the compressed response using Feign clients and <code>curl</code>.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_enable_compression_in_spring_boot">5.1. Step 1: Enable Compression in Spring Boot</h3>
+<div class="paragraph">
+<p>Spring Boot provides built-in support for enabling gzip compression. To enable it globally:</p>
+</div>
+<div class="sect3">
+<h4 id="_configuration_in_application_properties">5.1.1. Configuration in <code>application.properties</code></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="properties"><span></span><span class="tok-na">server.compression.enabled</span><span class="tok-o">=</span><span class="tok-s">true</span>
+<span class="tok-na">server.compression.mime-types</span><span class="tok-o">=</span><span class="tok-s">application/json,application/xml,text/html,text/plain</span>
+<span class="tok-na">server.compression.min-response-size</span><span class="tok-o">=</span><span class="tok-s">1024</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_a_spring_boot_endpoint">5.2. Step 2: Create a Spring Boot Endpoint</h3>
+<div class="paragraph">
+<p>Here is an example Spring Boot REST controller that returns a list of objects:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.web.bind.annotation.GetMapping</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.web.bind.annotation.RestController</span><span class="tok-p">;</span>
+
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.ArrayList</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.List</span><span class="tok-p">;</span>
+
+<span class="tok-nd">@RestController</span>
+<span class="tok-nd">@RequestMapping</span><span class="tok-p">(</span><span class="tok-s">&quot;/api&quot;</span><span class="tok-p">)</span>
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">SomeObjectController</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">static</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">SomeObject</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-kd">private</span><span class="tok-w"> </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">name</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-kd">private</span><span class="tok-w"> </span><span class="tok-kt">int</span><span class="tok-w"> </span><span class="tok-n">value</span><span class="tok-p">;</span>
+
+<span class="tok-w">        </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-nf">SomeObject</span><span class="tok-p">(</span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-n">name</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-kt">int</span><span class="tok-w"> </span><span class="tok-n">value</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">this</span><span class="tok-p">.</span><span class="tok-na">name</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">name</span><span class="tok-p">;</span>
+<span class="tok-w">            </span><span class="tok-k">this</span><span class="tok-p">.</span><span class="tok-na">value</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">value</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+
+<span class="tok-w">        </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-n">String</span><span class="tok-w"> </span><span class="tok-nf">getName</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">name</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+
+<span class="tok-w">        </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kt">int</span><span class="tok-w"> </span><span class="tok-nf">getValue</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">value</span><span class="tok-p">;</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+
+<span class="tok-w">    </span><span class="tok-nd">@GetMapping</span><span class="tok-p">(</span><span class="tok-s">&quot;/list&quot;</span><span class="tok-p">)</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">SomeObject</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-nf">getSomeObjects</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">SomeObject</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">someObjects</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">ArrayList</span><span class="tok-o">&lt;&gt;</span><span class="tok-p">();</span>
+<span class="tok-w">        </span><span class="tok-n">someObjects</span><span class="tok-p">.</span><span class="tok-na">add</span><span class="tok-p">(</span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">SomeObject</span><span class="tok-p">(</span><span class="tok-s">&quot;Object1&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-mi">100</span><span class="tok-p">));</span>
+<span class="tok-w">        </span><span class="tok-n">someObjects</span><span class="tok-p">.</span><span class="tok-na">add</span><span class="tok-p">(</span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">SomeObject</span><span class="tok-p">(</span><span class="tok-s">&quot;Object2&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-mi">200</span><span class="tok-p">));</span>
+<span class="tok-w">        </span><span class="tok-n">someObjects</span><span class="tok-p">.</span><span class="tok-na">add</span><span class="tok-p">(</span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">SomeObject</span><span class="tok-p">(</span><span class="tok-s">&quot;Object3&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-mi">300</span><span class="tok-p">));</span>
+<span class="tok-w">        </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">someObjects</span><span class="tok-p">;</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_consume_the_compressed_response_with_feign_client">5.3. Step 3: Consume the Compressed Response with Feign Client</h3>
+<div class="paragraph">
+<p>Spring Cloud OpenFeign makes consuming gzip-compressed responses straightforward.</p>
+</div>
+<div class="sect3">
+<h4 id="_create_the_feign_client">5.3.1. Create the Feign Client</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.cloud.openfeign.FeignClient</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.web.bind.annotation.GetMapping</span><span class="tok-p">;</span>
+
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.List</span><span class="tok-p">;</span>
+
+<span class="tok-nd">@FeignClient</span><span class="tok-p">(</span><span class="tok-n">name</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;some-service&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">url</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;http://localhost:8080/api&quot;</span><span class="tok-p">)</span>
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">interface</span> <span class="tok-nc">SomeObjectFeignClient</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-nd">@GetMapping</span><span class="tok-p">(</span><span class="tok-n">value</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;/list&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">produces</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;application/json&quot;</span><span class="tok-p">)</span>
+<span class="tok-w">    </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">SomeObjectController</span><span class="tok-p">.</span><span class="tok-na">SomeObject</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-nf">getSomeObjects</span><span class="tok-p">();</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_use_the_feign_client">5.3.2. Use the Feign Client</h4>
+<div class="paragraph">
+<p>Inject the Feign client and call the endpoint:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.beans.factory.annotation.Autowired</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.web.bind.annotation.GetMapping</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.web.bind.annotation.RestController</span><span class="tok-p">;</span>
+
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.util.List</span><span class="tok-p">;</span>
+
+<span class="tok-nd">@RestController</span>
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">FeignClientController</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-nd">@Autowired</span>
+<span class="tok-w">    </span><span class="tok-kd">private</span><span class="tok-w"> </span><span class="tok-n">SomeObjectFeignClient</span><span class="tok-w"> </span><span class="tok-n">someObjectFeignClient</span><span class="tok-p">;</span>
+
+<span class="tok-w">    </span><span class="tok-nd">@GetMapping</span><span class="tok-p">(</span><span class="tok-s">&quot;/fetch-compressed-data&quot;</span><span class="tok-p">)</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-n">List</span><span class="tok-o">&lt;</span><span class="tok-n">SomeObjectController</span><span class="tok-p">.</span><span class="tok-na">SomeObject</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-nf">fetchCompressedData</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">someObjectFeignClient</span><span class="tok-p">.</span><span class="tok-na">getSomeObjects</span><span class="tok-p">();</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Spring Cloud OpenFeign and the underlying HTTP client (e.g., Apache HttpClient) automatically handle gzip responses if the <code>Content-Encoding: gzip</code> header is present.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_verifying_feign_client_consumes_compressed_data">5.3.3. Verifying Feign Client Consumes Compressed Data</h4>
+<div class="paragraph">
+<p>To confirm that the Feign client consumes compressed data:</p>
+</div>
+<div class="sect4">
+<h5 id="_log_request_and_response_headers">Log Request and Response Headers</h5>
+<div class="paragraph">
+<p>Enable Feign logging by adding the following configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="yaml"><span></span><span class="tok-nt">logging</span><span class="tok-p">:</span>
+<span class="tok-w">  </span><span class="tok-nt">level</span><span class="tok-p">:</span>
+<span class="tok-w">    </span><span class="tok-nt">feign</span><span class="tok-p">:</span>
+<span class="tok-w">      </span><span class="tok-nt">client</span><span class="tok-p">:</span><span class="tok-w"> </span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">DEBUG</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the logs, look for:
+* <code>Accept-Encoding: gzip</code> in the request headers.
+* <code>Content-Encoding: gzip</code> in the response headers.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_use_a_custom_requestinterceptor">Use a Custom RequestInterceptor</h5>
+<div class="paragraph">
+<p>Add a custom <code>RequestInterceptor</code> to log headers explicitly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">feign.RequestInterceptor</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.context.annotation.Bean</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">org.springframework.context.annotation.Configuration</span><span class="tok-p">;</span>
+
+<span class="tok-nd">@Configuration</span>
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">FeignConfig</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-nd">@Bean</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-n">RequestInterceptor</span><span class="tok-w"> </span><span class="tok-nf">requestInterceptor</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">requestTemplate</span><span class="tok-w"> </span><span class="tok-o">-&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-n">System</span><span class="tok-p">.</span><span class="tok-na">out</span><span class="tok-p">.</span><span class="tok-na">println</span><span class="tok-p">(</span><span class="tok-s">&quot;Feign Request Headers: &quot;</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">requestTemplate</span><span class="tok-p">.</span><span class="tok-na">headers</span><span class="tok-p">());</span>
+<span class="tok-w">        </span><span class="tok-p">};</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_capture_network_traffic">Capture Network Traffic</h5>
+<div class="paragraph">
+<p>Use tools like <code>mitmproxy</code> or Wireshark to inspect HTTP traffic and verify that the request includes <code>Accept-Encoding: gzip</code> and the response includes <code>Content-Encoding: gzip</code>.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_validate_with_custom_decoder">Validate with Custom Decoder</h5>
+<div class="paragraph">
+<p>Create a custom Feign <code>Decoder</code> to throw an exception if the response is not gzip-compressed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="java"><span></span><span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">feign.Response</span><span class="tok-p">;</span>
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">feign.codec.Decoder</span><span class="tok-p">;</span>
+
+<span class="tok-kn">import</span><span class="tok-w"> </span><span class="tok-nn">java.io.IOException</span><span class="tok-p">;</span>
+
+<span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-kd">class</span> <span class="tok-nc">GzipValidationDecoder</span><span class="tok-w"> </span><span class="tok-kd">implements</span><span class="tok-w"> </span><span class="tok-n">Decoder</span><span class="tok-w"> </span><span class="tok-p">{</span>
+
+<span class="tok-w">    </span><span class="tok-kd">private</span><span class="tok-w"> </span><span class="tok-kd">final</span><span class="tok-w"> </span><span class="tok-n">Decoder</span><span class="tok-w"> </span><span class="tok-n">delegate</span><span class="tok-p">;</span>
+
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-nf">GzipValidationDecoder</span><span class="tok-p">(</span><span class="tok-n">Decoder</span><span class="tok-w"> </span><span class="tok-n">delegate</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-k">this</span><span class="tok-p">.</span><span class="tok-na">delegate</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">delegate</span><span class="tok-p">;</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+
+<span class="tok-w">    </span><span class="tok-nd">@Override</span>
+<span class="tok-w">    </span><span class="tok-kd">public</span><span class="tok-w"> </span><span class="tok-n">Object</span><span class="tok-w"> </span><span class="tok-nf">decode</span><span class="tok-p">(</span><span class="tok-n">Response</span><span class="tok-w"> </span><span class="tok-n">response</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">Type</span><span class="tok-w"> </span><span class="tok-n">type</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-kd">throws</span><span class="tok-w"> </span><span class="tok-n">IOException</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-o">!</span><span class="tok-n">response</span><span class="tok-p">.</span><span class="tok-na">headers</span><span class="tok-p">().</span><span class="tok-na">getOrDefault</span><span class="tok-p">(</span><span class="tok-s">&quot;Content-Encoding&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">List</span><span class="tok-p">.</span><span class="tok-na">of</span><span class="tok-p">()).</span><span class="tok-na">contains</span><span class="tok-p">(</span><span class="tok-s">&quot;gzip&quot;</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-p">{</span>
+<span class="tok-w">            </span><span class="tok-k">throw</span><span class="tok-w"> </span><span class="tok-k">new</span><span class="tok-w"> </span><span class="tok-n">IllegalStateException</span><span class="tok-p">(</span><span class="tok-s">&quot;Response is not gzip compressed&quot;</span><span class="tok-p">);</span>
+<span class="tok-w">        </span><span class="tok-p">}</span>
+<span class="tok-w">        </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-n">delegate</span><span class="tok-p">.</span><span class="tok-na">decode</span><span class="tok-p">(</span><span class="tok-n">response</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">type</span><span class="tok-p">);</span>
+<span class="tok-w">    </span><span class="tok-p">}</span>
+<span class="tok-p">}</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_consume_the_compressed_response_with_curl">5.4. Step 4: Consume the Compressed Response with <code>curl</code></h3>
+<div class="paragraph">
+<p>Use <code>curl</code> to send requests with gzip support:</p>
+</div>
+<div class="sect3">
+<h4 id="_enable_gzip_support">5.4.1. Enable Gzip Support</h4>
+<div class="paragraph">
+<p>Add the <code>Accept-Encoding: gzip</code> header:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="bash"><span></span>curl<span class="tok-w"> </span>-H<span class="tok-w"> </span><span class="tok-s2">&quot;Accept-Encoding: gzip&quot;</span><span class="tok-w"> </span>http://localhost:8080/api/list</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_save_the_compressed_response_to_a_file">5.4.2. Save the Compressed Response to a File</h4>
+<div class="paragraph">
+<p>Save the response to a file for inspection:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="bash"><span></span>curl<span class="tok-w"> </span>-H<span class="tok-w"> </span><span class="tok-s2">&quot;Accept-Encoding: gzip&quot;</span><span class="tok-w"> </span>-o<span class="tok-w"> </span>compressed-response.gz<span class="tok-w"> </span>http://localhost:8080/api/list</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_decompress_the_response">5.4.3. Decompress the Response</h4>
+<div class="paragraph">
+<p>Use <code>gunzip</code> to decompress the file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="bash"><span></span>gunzip<span class="tok-w"> </span>compressed-response.gz
+cat<span class="tok-w"> </span>compressed-response</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_automatic_decompression">5.4.4. Automatic Decompression</h4>
+<div class="paragraph">
+<p>Use the <code>--compressed</code> flag to automatically handle gzip compression:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="bash"><span></span>curl<span class="tok-w"> </span>--compressed<span class="tok-w"> </span>http://localhost:8080/api/list</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_summary">5.5. Summary</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Enable gzip compression in Spring Boot using configuration.</p>
+</li>
+<li>
+<p>Create a REST endpoint to return JSON data.</p>
+</li>
+<li>
+<p>Consume the endpoint with a Feign client or <code>curl</code>.</p>
+</li>
+<li>
+<p>Use <code>curl&#8217;s `--compressed</code> flag or <code>Accept-Encoding: gzip</code> header to handle compressed responses.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This setup optimizes response sizes and ensures compatibility with modern clients.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_analyzing_http_request_timing_with_curl">6. Analyzing HTTP Request Timing with curl</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This tutorial demonstrates how to measure the time spent in each stage of an HTTP request when using <code>curl</code>. The stages include name resolution, connection establishment, data transfer, and more.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_use_the_w_option_for_timing_details">6.1. Step 1: Use the <code>-w</code> Option for Timing Details</h3>
+<div class="paragraph">
+<p>The <code>-w</code> (write-out) option in <code>curl</code> allows you to specify variables to be displayed after the operation. Use the following variables to measure the time for each stage:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>time_namelookup</code>: Time from the start until the name resolving is completed.</p>
+</li>
+<li>
+<p><code>time_connect</code>: Time from the start until the TCP connection is established.</p>
+</li>
+<li>
+<p><code>time_appconnect</code>: Time from the start until the SSL/SSH/etc. handshake is completed (if applicable).</p>
+</li>
+<li>
+<p><code>time_pretransfer</code>: Time from the start until the file transfer is just about to begin.</p>
+</li>
+<li>
+<p><code>time_starttransfer</code>: Time from the start until the first byte is received from the server.</p>
+</li>
+<li>
+<p><code>time_total</code>: Total time for the entire operation.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_example_command">6.1.1. Example Command</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="bash"><span></span>curl<span class="tok-w"> </span>-o<span class="tok-w"> </span>/dev/null<span class="tok-w"> </span>-s<span class="tok-w"> </span>-w<span class="tok-w"> </span><span class="tok-s2">&quot;\nName Lookup: %{time_namelookup}\nConnect: %{time_connect}\nApp Connect: %{time_appconnect}\nPre Transfer: %{time_pretransfer}\nStart Transfer: %{time_starttransfer}\nTotal Time: %{time_total}\n&quot;</span><span class="tok-w"> </span>http://example.com</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example:
+* <code>-o /dev/null</code>: Discards the response body.
+* <code>-s</code>: Suppresses progress output.
+* <code>-w</code>: Specifies the format of the output.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_save_timing_details_to_a_file">6.2. Step 2: Save Timing Details to a File</h3>
+<div class="paragraph">
+<p>To save the timing details to a file, redirect the output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="bash"><span></span>curl<span class="tok-w"> </span>-o<span class="tok-w"> </span>/dev/null<span class="tok-w"> </span>-s<span class="tok-w"> </span>-w<span class="tok-w"> </span><span class="tok-s2">&quot;\nName Lookup: %{time_namelookup}\nConnect: %{time_connect}\nApp Connect: %{time_appconnect}\nPre Transfer: %{time_pretransfer}\nStart Transfer: %{time_starttransfer}\nTotal Time: %{time_total}\n&quot;</span><span class="tok-w"> </span>http://example.com<span class="tok-w"> </span>&gt;<span class="tok-w"> </span>timing_details.txt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This saves the timing information to <code>timing_details.txt</code> for later analysis.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_combine_timing_with_other_debugging_options">6.3. Step 3: Combine Timing with Other Debugging Options</h3>
+<div class="paragraph">
+<p>To include headers and verbose debugging information along with timing details, combine <code>-v</code> or <code>-I</code> with <code>-w</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="bash"><span></span>curl<span class="tok-w"> </span>-v<span class="tok-w"> </span>-o<span class="tok-w"> </span>/dev/null<span class="tok-w"> </span>-s<span class="tok-w"> </span>-w<span class="tok-w"> </span><span class="tok-s2">&quot;\nName Lookup: %{time_namelookup}\nConnect: %{time_connect}\nApp Connect: %{time_appconnect}\nPre Transfer: %{time_pretransfer}\nStart Transfer: %{time_starttransfer}\nTotal Time: %{time_total}\n&quot;</span><span class="tok-w"> </span>http://example.com</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This provides a complete picture of the request process, including headers and timing.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_summary_2">6.4. Summary</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Use <code>curl -w</code> to display timing details for each stage of an HTTP request.</p>
+</li>
+<li>
+<p>Save the timing details to a file for analysis using output redirection.</p>
+</li>
+<li>
+<p>Combine <code>-w</code> with other debugging options like <code>-v</code> for a comprehensive understanding of the request process.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>These steps allow you to diagnose performance bottlenecks and analyze the time taken at each stage of an HTTP request using <code>curl</code>.</p>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-12-24 08:37:18 +0100
+Last updated 2024-12-28 12:58:05 +0100
 </div>
 </div>
 </body>

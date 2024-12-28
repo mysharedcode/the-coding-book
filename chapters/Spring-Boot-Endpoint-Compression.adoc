@@ -1,0 +1,235 @@
+== Spring Boot Endpoint Compression and Client Consumption Tutorial
+
+This tutorial explains how to enable gzip compression in a Spring Boot endpoint, and how to consume the compressed response using Feign clients and `curl`.
+
+=== Step 1: Enable Compression in Spring Boot
+
+Spring Boot provides built-in support for enabling gzip compression. To enable it globally:
+
+==== Configuration in `application.properties`
+
+[source,properties,options=nowrap]
+----
+server.compression.enabled=true
+server.compression.mime-types=application/json,application/xml,text/html,text/plain
+server.compression.min-response-size=1024
+----
+
+=== Step 2: Create a Spring Boot Endpoint
+
+Here is an example Spring Boot REST controller that returns a list of objects:
+
+[source,java,options=nowrap]
+----
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+public class SomeObjectController {
+
+    public static class SomeObject {
+        private String name;
+        private int value;
+
+        public SomeObject(String name, int value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    @GetMapping("/list")
+    public List<SomeObject> getSomeObjects() {
+        List<SomeObject> someObjects = new ArrayList<>();
+        someObjects.add(new SomeObject("Object1", 100));
+        someObjects.add(new SomeObject("Object2", 200));
+        someObjects.add(new SomeObject("Object3", 300));
+        return someObjects;
+    }
+}
+----
+
+=== Step 3: Consume the Compressed Response with Feign Client
+
+Spring Cloud OpenFeign makes consuming gzip-compressed responses straightforward.
+
+==== Create the Feign Client
+
+[source,java,options=nowrap]
+----
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
+
+@FeignClient(name = "some-service", url = "http://localhost:8080/api")
+public interface SomeObjectFeignClient {
+
+    @GetMapping(value = "/list", produces = "application/json")
+    List<SomeObjectController.SomeObject> getSomeObjects();
+}
+----
+
+==== Use the Feign Client
+
+Inject the Feign client and call the endpoint:
+
+[source,java,options=nowrap]
+----
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public class FeignClientController {
+
+    @Autowired
+    private SomeObjectFeignClient someObjectFeignClient;
+
+    @GetMapping("/fetch-compressed-data")
+    public List<SomeObjectController.SomeObject> fetchCompressedData() {
+        return someObjectFeignClient.getSomeObjects();
+    }
+}
+----
+
+Spring Cloud OpenFeign and the underlying HTTP client (e.g., Apache HttpClient) automatically handle gzip responses if the `Content-Encoding: gzip` header is present.
+
+==== Verifying Feign Client Consumes Compressed Data
+
+To confirm that the Feign client consumes compressed data:
+
+===== Log Request and Response Headers
+
+Enable Feign logging by adding the following configuration:
+
+[source,yaml,options=nowrap]
+----
+logging:
+  level:
+    feign:
+      client: DEBUG
+----
+
+In the logs, look for:
+* `Accept-Encoding: gzip` in the request headers.
+* `Content-Encoding: gzip` in the response headers.
+
+===== Use a Custom RequestInterceptor
+
+Add a custom `RequestInterceptor` to log headers explicitly:
+
+[source,java,options=nowrap]
+----
+import feign.RequestInterceptor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class FeignConfig {
+
+    @Bean
+    public RequestInterceptor requestInterceptor() {
+        return requestTemplate -> {
+            System.out.println("Feign Request Headers: " + requestTemplate.headers());
+        };
+    }
+}
+----
+
+===== Capture Network Traffic
+
+Use tools like `mitmproxy` or Wireshark to inspect HTTP traffic and verify that the request includes `Accept-Encoding: gzip` and the response includes `Content-Encoding: gzip`.
+
+===== Validate with Custom Decoder
+
+Create a custom Feign `Decoder` to throw an exception if the response is not gzip-compressed:
+
+[source,java,options=nowrap]
+----
+import feign.Response;
+import feign.codec.Decoder;
+
+import java.io.IOException;
+
+public class GzipValidationDecoder implements Decoder {
+
+    private final Decoder delegate;
+
+    public GzipValidationDecoder(Decoder delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public Object decode(Response response, Type type) throws IOException {
+        if (!response.headers().getOrDefault("Content-Encoding", List.of()).contains("gzip")) {
+            throw new IllegalStateException("Response is not gzip compressed");
+        }
+        return delegate.decode(response, type);
+    }
+}
+----
+
+=== Step 4: Consume the Compressed Response with `curl`
+
+Use `curl` to send requests with gzip support:
+
+==== Enable Gzip Support
+
+Add the `Accept-Encoding: gzip` header:
+
+[source,bash,options=nowrap]
+----
+curl -H "Accept-Encoding: gzip" http://localhost:8080/api/list
+----
+
+==== Save the Compressed Response to a File
+
+Save the response to a file for inspection:
+
+[source,bash,options=nowrap]
+----
+curl -H "Accept-Encoding: gzip" -o compressed-response.gz http://localhost:8080/api/list
+----
+
+==== Decompress the Response
+
+Use `gunzip` to decompress the file:
+
+[source,bash,options=nowrap]
+----
+gunzip compressed-response.gz
+cat compressed-response
+----
+
+==== Automatic Decompression
+
+Use the `--compressed` flag to automatically handle gzip compression:
+
+[source,bash,optins=nowrap]
+----
+curl --compressed http://localhost:8080/api/list
+----
+
+=== Summary
+
+1. Enable gzip compression in Spring Boot using configuration.
+2. Create a REST endpoint to return JSON data.
+3. Consume the endpoint with a Feign client or `curl`.
+4. Use `curl`'s `--compressed` flag or `Accept-Encoding: gzip` header to handle compressed responses.
+
+This setup optimizes response sizes and ensures compatibility with modern clients.
